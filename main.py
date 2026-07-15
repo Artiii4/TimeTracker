@@ -1,9 +1,7 @@
 import os
 import sys
 import atexit
-
 import database
-
 
 def acquire_single_instance_lock():
     if sys.platform == 'win32':
@@ -18,10 +16,8 @@ def acquire_single_instance_lock():
             return True
         except Exception:
             pass
-
     lock_dir = database.get_app_data_dir()
     lock_path = os.path.join(lock_dir, 'timetracker.lock')
-
     if os.path.exists(lock_path):
         try:
             f = open(lock_path, 'r')
@@ -31,31 +27,24 @@ def acquire_single_instance_lock():
             return False
         except (ValueError, OSError, ProcessLookupError):
             pass
-
     f = open(lock_path, 'w')
     f.write(str(os.getpid()))
     f.close()
-
     def cleanup():
         try:
             os.remove(lock_path)
         except OSError:
             pass
-
     atexit.register(cleanup)
     return True
 
-
 def main():
     if not acquire_single_instance_lock():
-        print('Приложение уже запущено.')
+        print('Application already running.')
         sys.exit(0)
-
     from ui import App
-
     app = App()
     app.mainloop()
-
 
 if __name__ == '__main__':
     main()

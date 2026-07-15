@@ -4,7 +4,6 @@ import os
 import sys
 from datetime import datetime
 
-
 DB_FILENAME = 'timetracker.db'
 SETTINGS_FILENAME = "settings.json"
 
@@ -14,10 +13,10 @@ DEFAULT_SETTINGS = {
     "ignore_list": ["explorer.exe", "taskmgr.exe", "LockApp.exe", "SearchHost.exe"],
     "limits": {},
     "db_path": "",
-    "idle_threshold_seconds": 5,
-    "poll_interval_seconds": 5
+    "idle_threshold_seconds": 20,
+    "poll_interval_seconds": 5,
+    "language": "ru"
 }
-
 
 def get_app_data_dir():
     if sys.platform == 'win32':
@@ -29,20 +28,16 @@ def get_app_data_dir():
         os.makedirs(app_dir)
     return app_dir
 
-
 def get_settings_path():
     return os.path.join(get_app_data_dir(), SETTINGS_FILENAME)
 
-
 def load_settings():
     path = get_settings_path()
-
     if not os.path.exists(path):
         s = dict(DEFAULT_SETTINGS)
         s['db_path'] = os.path.join(get_app_data_dir(), DB_FILENAME)
         save_settings(s)
         return s
-
     try:
         f = open(path, 'r', encoding='utf-8')
         settings = json.load(f)
@@ -55,22 +50,22 @@ def load_settings():
         if key not in settings:
             settings[key] = DEFAULT_SETTINGS[key]
 
+    if settings.get('idle_threshold_seconds', 5) == 5:
+        settings['idle_threshold_seconds'] = 20
+
     if not settings.get('db_path'):
         settings['db_path'] = os.path.join(get_app_data_dir(), DB_FILENAME)
 
     save_settings(settings)
     return settings
 
-
 def save_settings(settings):
     path = get_settings_path()
     with open(path, "w", encoding="utf-8") as f:
         json.dump(settings, f, ensure_ascii=False, indent=4)
 
-
 def get_connection(db_path):
     return sqlite3.connect(db_path, check_same_thread=False)
-
 
 def init_db(db_path):
     conn = get_connection(db_path)
@@ -87,7 +82,6 @@ def init_db(db_path):
     conn.commit()
     return conn
 
-
 def start_session(conn, app_name, process_name, window_title, start_time):
     c = conn.cursor()
     c.execute(
@@ -97,7 +91,6 @@ def start_session(conn, app_name, process_name, window_title, start_time):
     conn.commit()
     return c.lastrowid
 
-
 def end_session(conn, session_id, end_time, duration_seconds):
     cursor = conn.cursor()
     cursor.execute(
@@ -105,7 +98,6 @@ def end_session(conn, session_id, end_time, duration_seconds):
         (end_time.isoformat(), duration_seconds, session_id)
     )
     conn.commit()
-
 
 def get_sessions_for_date(conn, date_obj):
     start = datetime.combine(date_obj, datetime.min.time())
@@ -130,7 +122,6 @@ def get_sessions_for_date(conn, date_obj):
         }
         result.append(item)
     return result
-
 
 def get_total_seconds_today(conn, date_obj):
     start = datetime.combine(date_obj, datetime.min.time())
