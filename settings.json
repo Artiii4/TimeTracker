@@ -1,0 +1,17 @@
+{
+    "theme": "dark",
+    "autostart": false,
+    "ignore_list": [
+        "explorer.exe",
+        "taskmgr.exe",
+        "LockApp.exe",
+        "SearchHost.exe"
+    ],
+    "limits": {
+        "chrome.exe": 60,
+        "steam.exe": 90
+    },
+    "db_path": "C:\\Users\\<ИмяПользователя>\\AppData\\Roaming\\TimeTracker\\timetracker.db",
+    "idle_threshold_seconds": 5,
+    "poll_interval_seconds": 5
+}
